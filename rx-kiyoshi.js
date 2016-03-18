@@ -2,7 +2,7 @@
 (function() {
 'use strict';
 
-function createStream2() {
+function createZundokoStream() {
   var randomStream = Rx.Observable.create(observer => {
     observer.onNext(Math.floor(Math.random()*100)%2);
     observer.onCompleted();
@@ -10,17 +10,16 @@ function createStream2() {
   var zun = Rx.Observable.of('ズン');
   var doko = Rx.Observable.of('ドコ');
   var zundoko = randomStream.flatMap(val => (val ? zun : doko));
+  return zundoko;
+}
+
+function createStream() {
+  var zundoko = createZundokoStream();
 
   var stream = Rx.Observable.interval(500)
       .flatMap(zundoko)
       .do(val => console.log(val))
-      .scan((acc, x) => {
-        acc.push(x);
-        if (acc.length > 5) {
-          acc.shift();
-        }
-        return acc;
-      },[])
+      .bufferWithCount(5, 1)
       .do(val => console.log(val))
       .takeWhile((val) => {
         return val.join('') !== 'ズンズンズンズンドコ';
@@ -29,7 +28,7 @@ function createStream2() {
 }
 
 function start1() {
-  var source = createStream2();
+  var source = createStream();
   var subscription = source.subscribe(
       function(x) {
           // console.log('Next: ', x);
