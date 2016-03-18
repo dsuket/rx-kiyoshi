@@ -2,7 +2,13 @@
 (function() {
 'use strict';
 
-function createZundokoStream() {
+var logObserver = {
+  onNext: x => console.log('onNext:', x),
+  onError: err => console.log('onError: ', err),
+  onCompleted: () => console.log('onCompleted'),
+};
+
+function _createZundokoStream() {
   var randomStream = Rx.Observable.create(observer => {
     observer.onNext(Math.floor(Math.random()*100)%2);
     observer.onCompleted();
@@ -13,33 +19,31 @@ function createZundokoStream() {
   return zundoko;
 }
 
+function createZundokoStream() {
+  var zun = Rx.Observable.of('ズン');
+  var doko = Rx.Observable.of('ドコ');
+  var getRmd = () => Math.floor(Math.random()*100)%2;
+  return Rx.Observable.if(getRmd, zun, doko);
+}
+
 function createStream() {
   var zundoko = createZundokoStream();
-
-  var stream = Rx.Observable.interval(500)
+  var stream = Rx.Observable.interval(200)
       .flatMap(zundoko)
       .do(val => console.log(val))
       .bufferWithCount(5, 1)
       .do(val => console.log(val))
-      .takeWhile((val) => {
-        return val.join('') !== 'ズンズンズンズンドコ';
-      });
+      .takeWhile(val => val.join('') !== 'ズンズンズンズンドコ');
   return stream;
 }
 
 function start1() {
   var source = createStream();
-  var subscription = source.subscribe(
-      function(x) {
-          // console.log('Next: ', x);
-      },
-      function(err) {
-          console.log('Error: ', err);
-      },
-      function() {
-          console.log('キ・ヨ・シ！');
-      }
-  );
+  source.subscribe({
+      onNext: () =>  {},
+      onError: err => console.log('Error: ', err),
+      onCompleted: () => console.log('キ・ヨ・シ！'),
+  });
 }
 
 function start2() {
