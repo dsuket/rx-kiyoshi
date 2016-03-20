@@ -10,7 +10,7 @@ var logObserver = {
 
 function _createZundokoStream() {
   var randomStream = Rx.Observable.create(observer => {
-    observer.onNext(Math.floor(Math.random()*100)%2);
+    observer.onNext(!Math.floor(Math.random()*2));
     observer.onCompleted();
   });
   var zun = Rx.Observable.of('ズン');
